@@ -5,8 +5,16 @@ using namespace std;
 // CONSTRUCTEUR
 MainWindow::MainWindow() : QWidget()
 {
+
+    m_path = new QString;
+    m_path->append(QString::fromStdString(filesystem::current_path()));
+
+    //!TAB
+    m_tabBar = new QTabWidget;
+
+    //==========PAGE CREATE===============//
     //! HBOXLAYOUT MAIN
-    m_layoutMain = new QVBoxLayout;
+    m_layoutCreatePage = new QVBoxLayout;
 
     //?DEF CLASS
     m_groupDefProject = new QGroupBox;
@@ -22,7 +30,7 @@ MainWindow::MainWindow() : QWidget()
 
     QObject::connect(m_buttonSearchDir, SIGNAL(clicked()), this, SLOT(chooseDirectory()));
 
-    m_pathDirectory->setText("/home/tengu/Documents/");
+    m_pathDirectory->setText(*m_path);
     m_layoutDir->addWidget(m_pathDirectory);
     m_layoutDir->addWidget(m_buttonSearchDir);
 
@@ -86,36 +94,70 @@ MainWindow::MainWindow() : QWidget()
     QObject::connect(m_quitter, SIGNAL(clicked()), qApp, SLOT(quit()));
     QObject::connect(m_genere, SIGNAL(clicked()), this, SLOT(generate()));
     //===================================//
-    //! ADD TO MAIN LAYOUT
-    m_layoutMain->addWidget(m_groupDefProject);
-    m_layoutMain->addWidget(m_groupDefOptions);
-    m_layoutMain->addWidget(m_groupRemark);
-    m_layoutMain->addLayout(m_layoutButton);
+    //! ADD TO Create Page Layout
+    m_layoutCreatePage->addWidget(m_groupDefProject);
+    m_layoutCreatePage->addWidget(m_groupDefOptions);
+    m_layoutCreatePage->addWidget(m_groupRemark);
+    m_layoutCreatePage->addLayout(m_layoutButton);
+
+    //=======PAGE MANAGE================//
+
+    m_layoutManagePage = new QHBoxLayout;
+
+    m_modelFileView = new QFileSystemModel;
+    m_modelFileView->setRootPath(*m_path);
+
+    m_treeView = new QTreeView;
+    m_treeView->setModel(m_modelFileView);
+    m_treeView->setRootIndex(m_modelFileView->index(*m_path));
+
+    m_layoutManagePage->addWidget(m_treeView);
+
+    //==========MAIN WINDOW ==============//
+    m_pageCreate = new QWidget;
+    m_pageManage = new QWidget;
+
+    m_pageCreate->setLayout(m_layoutCreatePage);
+    m_pageManage->setLayout(m_layoutManagePage);
+
+    QTabWidget *tabs = new QTabWidget;
+    tabs->addTab(m_pageCreate, tr("Create"));
+    tabs->addTab(m_pageManage, tr("Manage"));
+
+    // tabs->show();
+
+    m_layoutTab = new QVBoxLayout;
+    m_layoutTab->addWidget(tabs);
 
     //* ADD LAYOUT TO THE WINDOW
-    this->setLayout(m_layoutMain);
+    this->setLayout(m_layoutTab);
 }
 
 void MainWindow::chooseDirectory()
 {
-    m_pathDirectory->setText(QFileDialog::getExistingDirectory(this, tr("Open directory"), "/home/tengu/Documents", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks));
+    m_pathDirectory->setText(QFileDialog::getExistingDirectory(this, tr("Open directory"), *m_path, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks));
 }
 
 void MainWindow::generate() const
 {
-    QString path;
-    path.append(m_pathDirectory->text() + "/" + m_nomProject->text());
 
-    filesystem::create_directories(path.toStdString());
+    //TEST
+
+    m_path->clear();
+    m_path->append(m_pathDirectory->text() + "/" + m_nomProject->text());
+
+    std::cout << m_path->toStdString() << std::endl;
+
+    filesystem::create_directories(m_path->toStdString());
 
     if (m_includes->isChecked() == true && m_src->isChecked() == true)
     {
-        filesystem::create_directories(path.toStdString() + "/src");
-        filesystem::create_directories(path.toStdString() + "/includes");
+        filesystem::create_directories(m_path->toStdString() + "/src");
+        filesystem::create_directories(m_path->toStdString() + "/includes");
     }
 
     ////Modif main commentaire Projet
-    ofstream mainFile(path.toStdString() + "/src/main.cpp");
+    ofstream mainFile(m_path->toStdString() + "/src/main.cpp");
 
     if (m_groupRemark->isChecked() == true)
     {
@@ -156,7 +198,7 @@ void MainWindow::generate() const
     #PROJECT NAME
     project(projectGenerator)
     */
-    ofstream cmakeFile(path.toStdString() + "/CMakeLists.txt");
+    ofstream cmakeFile(m_path->toStdString() + "/CMakeLists.txt");
 
     if (cmakeFile)
     {
@@ -206,4 +248,6 @@ void MainWindow::generate() const
     {
         cout << "Error open cmake file" << endl;
     }
+
+    m_treeView->setRootIndex(m_modelFileView->index(*m_path));
 }

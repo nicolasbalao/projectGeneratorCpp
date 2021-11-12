@@ -1,4 +1,15 @@
+/*
+TODO: 
+//// add argument path
+////- add Tab
+
+- Group for option to create class In the project
+
+
+
+*/
 #include <iostream>
+#include <filesystem>
 #include <QWidget>
 #include <QApplication>
 
@@ -8,6 +19,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
+
     QApplication app(argc, argv);
 
     MainWindow window;

@@ -45,6 +45,9 @@ Description Fentre:
 #include <QString>
 #include <QFileDialog>
 #include <QLabel>
+#include <QTabWidget>
+#include <QTreeView>
+#include <QFileSystemModel>
 
 class MainWindow : public QWidget
 {
@@ -53,7 +56,16 @@ class MainWindow : public QWidget
     Q_OBJECT
 
 protected:
-    QVBoxLayout *m_layoutMain; // layout de toute la fenêtre
+    QVBoxLayout *m_layoutTab;
+    QTabWidget *m_tabBar;
+    QString *m_path;
+
+    //Page
+    QWidget *m_pageCreate;
+    QWidget *m_pageManage;
+
+    //=======PAGE CREATE ============//
+    QVBoxLayout *m_layoutCreatePage; // layout de toute la fenêtre
     // DEF CLASS
     QGroupBox *m_groupDefProject;
     QFormLayout *m_formDefProject;
@@ -79,6 +91,12 @@ protected:
     QHBoxLayout *m_layoutButton;
     QPushButton *m_quitter;
     QPushButton *m_genere;
+
+    //========PAGE MANAGE======//
+
+    QHBoxLayout *m_layoutManagePage;
+    QFileSystemModel *m_modelFileView;
+    QTreeView *m_treeView;
 
 public:
     MainWindow();
