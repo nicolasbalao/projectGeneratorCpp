@@ -1,9 +1,9 @@
 /*
-TODO: 
-//// add argument path
-////- add Tab
+Amélioration Possible:
 
-- Group for option to create class In the project
+- pouvoir ouvrire les fichier depuis l'app
+- design
+- popUP qui confirme la création du projet
 
 
 
@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 
     MainWindow window;
 
+    window.resize(700, 700);
     window.show();
 
     return app.exec();

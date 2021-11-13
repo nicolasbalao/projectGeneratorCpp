@@ -81,18 +81,15 @@ MainWindow::MainWindow() : QWidget()
     //?Button
 
     m_layoutButton = new QHBoxLayout;
-    m_quitter = new QPushButton;
-    m_genere = new QPushButton;
+    m_buttonGoTo = new QPushButton("Aller à");
+    m_genere = new QPushButton("Générer");
 
-    m_quitter->setText("Quitter");
-    m_genere->setText("Générer !");
-
-    m_layoutButton->addWidget(m_quitter);
+    m_layoutButton->addWidget(m_buttonGoTo);
     m_layoutButton->addWidget(m_genere);
 
     // CONNECTION
-    QObject::connect(m_quitter, SIGNAL(clicked()), qApp, SLOT(quit()));
-    QObject::connect(m_genere, SIGNAL(clicked()), this, SLOT(generate()));
+    QObject::connect(m_buttonGoTo, SIGNAL(clicked()), this, SLOT(goToDirectory()));
+    QObject::connect(m_genere, SIGNAL(clicked()), this, SLOT(generateProject()));
     //===================================//
     //! ADD TO Create Page Layout
     m_layoutCreatePage->addWidget(m_groupDefProject);
@@ -102,7 +99,7 @@ MainWindow::MainWindow() : QWidget()
 
     //=======PAGE MANAGE================//
 
-    m_layoutManagePage = new QHBoxLayout;
+    m_layoutManagePage = new QVBoxLayout;
 
     m_modelFileView = new QFileSystemModel;
     m_modelFileView->setRootPath(*m_path);
@@ -111,7 +108,40 @@ MainWindow::MainWindow() : QWidget()
     m_treeView->setModel(m_modelFileView);
     m_treeView->setRootIndex(m_modelFileView->index(*m_path));
 
+    //?FORM CLASS
+    m_classOption = new QGroupBox;
+    m_layoutClassOption = new QFormLayout;
+    m_nomClass = new QLineEdit;
+    m_nomClassMere = new QLineEdit;
+    m_buttonGenereClass = new QPushButton("Generer la class");
+
+    //? REMARK CLASS
+    m_classRemark = new QGroupBox;
+    m_classFormRemark = new QFormLayout;
+    m_classRemarkAuteur = new QLineEdit;
+    m_classTextRemark = new QTextEdit;
+
+    m_classOption->setTitle("Class");
+
+    m_classRemark->setTitle("Ajouter commentaire");
+    m_classRemark->setCheckable(true);
+    m_classRemark->setChecked(false);
+
+    QObject::connect(m_buttonGenereClass, SIGNAL(clicked()), this, SLOT(generateClass()));
+
+    m_layoutClassOption->addRow("Nom Class", m_nomClass);
+    m_layoutClassOption->addRow("Nom Class Mere", m_nomClassMere);
+
+    m_classFormRemark->addRow("Auteur: ", m_classRemarkAuteur);
+    m_classFormRemark->addRow("Commentaire", m_classTextRemark);
+
+    m_classOption->setLayout(m_layoutClassOption);
+    m_classRemark->setLayout(m_classFormRemark);
+
+    m_layoutManagePage->addWidget(m_classOption);
+    m_layoutManagePage->addWidget(m_classRemark);
     m_layoutManagePage->addWidget(m_treeView);
+    m_layoutManagePage->addWidget(m_buttonGenereClass);
 
     //==========MAIN WINDOW ==============//
     m_pageCreate = new QWidget;
@@ -138,7 +168,14 @@ void MainWindow::chooseDirectory()
     m_pathDirectory->setText(QFileDialog::getExistingDirectory(this, tr("Open directory"), *m_path, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks));
 }
 
-void MainWindow::generate() const
+void MainWindow::goToDirectory()
+{
+    m_path->clear();
+    m_path->append(m_pathDirectory->text() + "/" + m_nomProject->text());
+    m_treeView->setRootIndex(m_modelFileView->index(*m_path));
+}
+
+void MainWindow::generateProject()
 {
 
     //TEST
@@ -250,4 +287,71 @@ void MainWindow::generate() const
     }
 
     m_treeView->setRootIndex(m_modelFileView->index(*m_path));
+    this->setWindowTitle(m_nomProject->text());
+}
+
+void MainWindow::generateClass()
+{
+    if (m_nomClass->text().isEmpty() != true)
+    {
+        ofstream classFile(m_path->toStdString() + "/includes/" + m_nomClass->text().toStdString() + ".h");
+
+        if (classFile)
+        {
+            if (m_classRemark->isChecked() == true)
+            {
+                classFile << "/*" << endl
+                          << "Auteur: " << m_classRemarkAuteur->text().toStdString() << endl
+                          << endl
+                          << "Role: " << endl
+                          << m_classTextRemark->toPlainText().toStdString() << endl
+                          << "*/" << endl;
+            }
+
+            classFile << "#ifndef DEF_" << m_nomClass->text().toUpper().toStdString() << endl
+                      << "#define DEF_" << m_nomClass->text().toUpper().toStdString() << endl
+                      << endl
+                      << "class " << m_nomClass->text().toStdString();
+
+            if (m_nomClassMere->text().isEmpty() != true)
+            {
+                classFile << " : public " << m_nomClassMere->text().toStdString();
+            }
+
+            classFile << endl
+                      << "{" << endl
+                      << "protected:" << endl
+                      << endl
+                      << "public:" << endl
+                      << " " << m_nomClass->text().toStdString() << "();" << endl
+                      << endl
+                      << "};" << endl
+                      << endl
+                      << "#endif";
+        }
+        else
+        {
+            cout << "Error open file Class" << endl;
+        }
+        classFile.close();
+
+        ofstream cppFile(m_path->toStdString() + "/src/" + m_nomClass->text().toStdString() + ".cpp");
+
+        if (cppFile)
+        {
+            cppFile << "#include \"../includes/" << m_nomClass->text().toStdString() << ".h" << endl
+                    << endl
+                    << m_nomClass->text().toStdString() << "::" << m_nomClass->text().toStdString() << "(){}";
+        }
+        else
+        {
+            cout << "Error open file cpp class" << endl;
+        }
+        cppFile.close();
+    }
+
+    else
+    {
+        cout << "Error Nom class Empty" << endl;
+    }
 }

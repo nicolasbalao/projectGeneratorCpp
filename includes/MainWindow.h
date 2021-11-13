@@ -89,21 +89,34 @@ protected:
 
     //button
     QHBoxLayout *m_layoutButton;
-    QPushButton *m_quitter;
+    QPushButton *m_buttonGoTo;
     QPushButton *m_genere;
 
     //========PAGE MANAGE======//
 
-    QHBoxLayout *m_layoutManagePage;
+    QVBoxLayout *m_layoutManagePage;
     QFileSystemModel *m_modelFileView;
     QTreeView *m_treeView;
+
+    QGroupBox *m_classOption;
+    QFormLayout *m_layoutClassOption;
+    QLineEdit *m_nomClass;
+    QLineEdit *m_nomClassMere;
+    QPushButton *m_buttonGenereClass;
+
+    QGroupBox *m_classRemark;
+    QFormLayout *m_classFormRemark;
+    QLineEdit *m_classRemarkAuteur;
+    QTextEdit *m_classTextRemark;
 
 public:
     MainWindow();
 
 public slots:
     void chooseDirectory();
-    void generate() const;
+    void generateProject();
+    void generateClass();
+    void goToDirectory();
 };
 
 #endif
