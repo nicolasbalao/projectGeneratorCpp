@@ -9,3 +9,13 @@ Cet utilitaire permet de créée un projet en c++, avec une structure basic (dos
 ![](Assets/CreatePage.png)
 
 ![](Assets/ManagePage.png)
+
+##Amélioration:
+
+- Pouvoir ouvrir un fichier depuis l'utilitaire
+
+- Le design
+
+- Ajout de fonctionnalités comme (gestion cmake, test, git)
+
+
